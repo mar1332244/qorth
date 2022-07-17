@@ -1,11 +1,11 @@
-package main
+package queue
 
 import (
     "fmt"
 )
 
 type Node struct {
-    data Token
+    data int
     prev *Node
     next *Node
 }
@@ -20,15 +20,15 @@ func (q Queue) Size() int {
 	return q.size
 }
 
-func (q *Queue) Push(token Token) {
+func (q *Queue) Push(n int) {
     if q.front == nil {
-		q.front = &Node{data: token}
+		q.front = &Node{data: n}
         q.back = q.front
     } else {
-        q.back.next = &Node{data: token}
+        q.back.next = &Node{data: n}
         q.back = q.back.next
     }
-    q.Size++
+    q.size++
 }
 
 func (q *Queue) Pop() error {
@@ -40,9 +40,9 @@ func (q *Queue) Pop() error {
     return nil
 }
 
-func (q Queue) Peek() (Token, error) {
+func (q Queue) Peek() (int, error) {
     if q.Size() == 0 {
-        return Token{}, fmt.Errorf("queue is empty")
+        return 0, fmt.Errorf("queue is empty")
     }
     return q.front.data, nil
 }
