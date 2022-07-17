@@ -16,14 +16,24 @@ import (
 type TokenType int
 
 const (
-    OP_INT_PUSH = TokenType(iota)
-    OP_INT_ADD  = TokenType(iota)
-    OP_INT_DUMP = TokenType(iota)
+    OP_QUEUE_PUSH = TokenType(iota)
+	OP_QUEUE_POP  = TokenType(iota)
+	OP_QUEUE_SWAP = TokenType(iota)
+	OP_QUEUE_BACK = TokenType(iota)
+    OP_INT_ADD    = TokenType(iota)
+	OP_INT_SUB    = TokenType(iota)
+	OP_INT_MUL    = TokenType(iota)
+	OP_INT_DIV    = TokenType(iota)
+	OP_INT_MOD    = TokenType(iota)
+    OP_INT_DUMP   = TokenType(iota)
+	OP_CHAR_DUMP  = TokenType(iota)
 )
 
 var KnownOperations map[string]TokenType = map[string]TokenType {
     "+": OP_INT_ADD,
     ".": OP_INT_DUMP,
+	"'": OP_QUEUE_POP,
+	"$": OP_CHAR_DUMP,
 }
 
 type Token struct {
@@ -46,7 +56,7 @@ func ValidateToken(t *Token) error {
     }
     if n, err := strconv.Atoi(t.Repr); err == nil {
         t.Value = n
-        t.Type = OP_INT_PUSH
+        t.Type = OP_QUEUE_PUSH
         return nil
     }
     return fmt.Errorf(
@@ -100,7 +110,6 @@ func GetTokensFromFile(fname string) ([]Token, error) {
     if err = scanner.Err(); err != nil {
 		return program, fmt.Errorf("qorth: %v", err)
     }
-    fmt.Println(program)
     return program, nil
 }
 
@@ -133,6 +142,16 @@ func InterpretProgram(program []Token) error {
 				return fmt.Errorf("%s:%d:%d: failed to get value for `.`", t.File, t.Line, t.Pos)
 			}
 			fmt.Print(a)
+		case OP_QUEUE_DROP:
+			if err := q.Pop(); err != nil {
+				return fmt.Errorf("%s:%d:%d: failed to get value for `'`", t.File, t.Line, t.Pos)
+			}
+		case OP_CHAR_DUMP:
+			a, err := q.Peek()
+			if err != nil {
+				return fmt.Errorf("%s:%d:%d: failed to get value for `$`", t.File, t.Line, t.Pos)
+			}
+			fmt.Printf("%c", a)
 		default:
 			return fmt.Errorf("qorth: unreachable token encountered")
 		}
