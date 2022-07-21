@@ -1,7 +1,7 @@
 package queue
 
 import (
-    "fmt"
+    "errors"
 )
 
 type Node struct {
@@ -20,6 +20,12 @@ func (q Queue) Size() int {
 	return q.size
 }
 
+func (q *Queue) Clear() {
+    for q.size > 0 {
+        q.Pop()
+    }
+}
+
 func (q *Queue) Push(n int) {
     if q.front == nil {
 		q.front = &Node{data: n}
@@ -33,7 +39,7 @@ func (q *Queue) Push(n int) {
 
 func (q *Queue) Pop() error {
     if q.size == 0 {
-        return fmt.Errorf("queue is empty")
+        return errors.New("queue is empty")
     }
     q.size--
     q.front = q.front.next
@@ -42,11 +48,7 @@ func (q *Queue) Pop() error {
 
 func (q Queue) Peek() (int, error) {
     if q.Size() == 0 {
-        return 0, fmt.Errorf("queue is empty")
+        return 0, errors.New("queue is empty")
     }
     return q.front.data, nil
-}
-
-func (q Queue) String() string {
-    return "Queue<Token>"
 }

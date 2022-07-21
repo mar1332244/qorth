@@ -10,24 +10,121 @@ import (
 )
 
 import (
-    "github.com/mar1332244/qorth/queue"
+    "github.com/mar1332244/qorth/pkg/queue"
 )
 
 type TokenType int
 
 const (
-    OP_QUEUE_PUSH = TokenType(iota)
-	OP_QUEUE_POP  = TokenType(iota)
-	OP_QUEUE_SWAP = TokenType(iota)
-	OP_QUEUE_BACK = TokenType(iota)
-    OP_INT_ADD    = TokenType(iota)
-	OP_INT_SUB    = TokenType(iota)
-	OP_INT_MUL    = TokenType(iota)
-	OP_INT_DIV    = TokenType(iota)
-	OP_INT_MOD    = TokenType(iota)
-    OP_INT_DUMP   = TokenType(iota)
-	OP_CHAR_DUMP  = TokenType(iota)
+    OP_QUEUE_PUSH  = TokenType(iota) // any int
+	OP_QUEUE_POP   = TokenType(iota) // '
+	OP_QUEUE_SIZE  = TokenType(iota) // ?
+	OP_QUEUE_DUP   = TokenType(iota) // @
+	OP_QUEUE_BACK  = TokenType(iota) // #
+	OP_QUEUE_CLEAR = TokenType(iota) // _
+
+    OP_INT_ADD = TokenType(iota) // +
+	OP_INT_SUB = TokenType(iota) // -
+	OP_INT_MUL = TokenType(iota) // *
+	OP_INT_DIV = TokenType(iota) // /
+	OP_INT_MOD = TokenType(iota) // %
+	OP_INT_POW = TokenType(iota) // **
+
+	OP_INT_AND = TokenType(iota) // &
+	OP_INT_OR  = TokenType(iota) // |
+	OP_INT_XOR = TokenType(iota) // ^
+	OP_INT_NOT = TokenType(iota) // ~
+	OP_INT_RS  = TokenType(iota) // <<
+	OP_INT_LS  = TokenType(iota) // >>
+
+	OP_BOOL_AND = TokenType(iota) // &&
+	OP_BOOL_OR  = TokenType(iota) // ||
+	OP_BOOL_NOT = TokenType(iota) // !
+	OP_BOOL_GT  = TokenType(iota) // <
+	OP_BOOL_GE  = TokenType(iota) // <=
+	OP_BOOL_LT  = TokenType(iota) // >
+	OP_BOOL_LE  = TokenType(iota) // >=
+	OP_BOOL_EQ  = TokenType(iota) // ==
+	OP_BOOL_NEQ = TokenType(iota) // !=
+
+    OP_INT_DUMP  = TokenType(iota) // .
+	OP_CHAR_DUMP = TokenType(iota) // $
+	OP_CHAR_READ = TokenType(iota) // ,
+
+	BLOCK_WHILE = TokenType(iota) // while
+	BLOCK_DO    = TokenType(iota) // do
+	BLOCK_END   = TokenType(iota) // end
+	BLOCK_IF    = TokenType(iota) // if
+	BLOCK_ELSE  = TokenType(iota) // else
+
+	COMMENT_BEGIN = TokenType(iota) // (
+	COMMENT_END   = TokenType(iota) // )
 )
+
+/*
+
+10
+[10]
+2
+[10 2]
+dup
+[10 2 10]
+%
+[10 0]
+back
+[0 10]
+drop
+[10]
+.
+[10]
+1
+[10 1]
+-
+[9]
+2
+[9 2]
+dup
+[9 2 9]
+%
+[9 1]
+back
+[1 9]
+back
+[9 1]
+dup
+[9 1 9]
++
+[9 10]
+back
+[10 9]
+.
+[10 9]
+drop
+[9]
+10
+[9 10]
+back
+[10 9]
+$
+[10 9]
+drop
+[9]
+1
+[9 1]
+-
+[8]
+
+10 do
+	2 @ % #
+	if 0 == do
+		' .
+	else
+		# @ + # . '
+	end
+	10 # $ '
+	1 -
+while 0 > end
+*/
 
 var KnownOperations map[string]TokenType = map[string]TokenType {
     "+": OP_INT_ADD,
@@ -110,6 +207,7 @@ func GetTokensFromFile(fname string) ([]Token, error) {
     if err = scanner.Err(); err != nil {
 		return program, fmt.Errorf("qorth: %v", err)
     }
+	fmt.Println(program)
     return program, nil
 }
 
@@ -122,7 +220,7 @@ func InterpretProgram(program []Token) error {
 	for ip := 0; ip < len(program); ip++ {
 		t := program[ip]
 		switch t.Type {
-		case OP_INT_PUSH:
+		case OP_QUEUE_PUSH:
 			q.Push(t.Value)
 		case OP_INT_ADD:
 			a, err := q.Peek()
@@ -142,7 +240,7 @@ func InterpretProgram(program []Token) error {
 				return fmt.Errorf("%s:%d:%d: failed to get value for `.`", t.File, t.Line, t.Pos)
 			}
 			fmt.Print(a)
-		case OP_QUEUE_DROP:
+		case OP_QUEUE_POP:
 			if err := q.Pop(); err != nil {
 				return fmt.Errorf("%s:%d:%d: failed to get value for `'`", t.File, t.Line, t.Pos)
 			}
