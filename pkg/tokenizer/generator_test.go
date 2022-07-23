@@ -31,6 +31,6 @@ func TestGetTokensFromFile(t *testing.T) {
 		if err != nil {
 			continue
 		}
-		t.Logf("%s", buf)
+		t.Logf("\n%s", buf)
 	}
 }

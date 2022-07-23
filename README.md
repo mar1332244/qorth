@@ -1,2 +1,2 @@
 # qorth
-It's like Forth, but we use a queue instead of a stack
+Esoteric Forth like language that uses a queue instead of a stack
