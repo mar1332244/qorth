@@ -55,15 +55,9 @@ func generateTokens(buffer *bytes.Buffer) ([]Token, error) {
 	for 0 < buffer.Len() {
 		c, _ := buffer.ReadByte()
 		switch c {
-		case commentBegin:
-			skipComment(buffer)
-		case '"':
-		case '\n':
-		case ' ':
-		default:
 		}
 	}
-	return tokens[:len(tokens): len(tokens)], nil
+	return tokens[:len(tokens):len(tokens)], nil
 }
 
 func GetTokensFromFile(filename string) ([]Token, error) {
