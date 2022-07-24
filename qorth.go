@@ -51,11 +51,11 @@ const (
 	OP_CHAR_DUMP = TokenType(iota) // $
 	OP_CHAR_READ = TokenType(iota) // ,
 
-	BLOCK_WHILE = TokenType(iota) // while
-	BLOCK_DO    = TokenType(iota) // do
-	BLOCK_END   = TokenType(iota) // end
-	BLOCK_IF    = TokenType(iota) // if
-	BLOCK_ELSE  = TokenType(iota) // else
+	BLOCK_WHILE  = TokenType(iota) // while
+	BLOCK_DO     = TokenType(iota) // do
+	BLOCK_END    = TokenType(iota) // end
+	BLOCK_UNLESS = TokenType(iota) // unless
+	BLOCK_ELSE   = TokenType(iota) // else
 
 	COMMENT_BEGIN = TokenType(iota) // (
 	COMMENT_END   = TokenType(iota) // )

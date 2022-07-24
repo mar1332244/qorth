@@ -35,47 +35,37 @@ func getString(buffer *bytes.Buffer) (string, bool) {
 	return builder.String(), false
 }
 
-func skipComment(buffer *bytes.Buffer) (int, bool) {
-	charsRead := 1
-	for 0 < buffer.Len() {
-		charsRead++
-		if c, _ := buffer.ReadByte(); c == commentEnd {
-			break
-		}
-	}
-	return charsRead, 0 < buffer.Len()
-}
-
-func generateTokens(buffer *bytes.Buffer) ([]Token, error) {
+func generateTokens(buffer *bytes.Buffer, src string) ([]Token, error) {
 	var builder strings.Builder
-	var lineNum, linePos, startLine, startPos int
-	filename, _ := buffer.ReadString('\n')
-	filename = filename[:len(filename)-1]
+	var inComment, inString bool
 	tokens := make([]Token, 0, initialSliceCap)
-	for 0 < buffer.Len() {
-		c, _ := buffer.ReadByte()
-		switch c {
-		}
+	lineNum, charNum := 1, 1
+	token := Token{File: filpath.Base(src), Line: 1, Pos: 1}
+	for c := byte(0); 0 < buffer.Len(); c, _ = buffer.ReadByte() {
+	}
+	if inString {
+		return nil, fmt.Errorf(
+			openStr, token.File, token.Line, token.Pos, builder.String(),
+		)
 	}
 	return tokens[:len(tokens):len(tokens)], nil
 }
 
-func GetTokensFromFile(filename string) ([]Token, error) {
-	inFile, err := os.Open(filename)
+func GetTokensFromFile(src string) ([]Token, error) {
+	inFile, err := os.Open(src)
 	if err, ok := err.(*os.PathError); ok {
 		return nil, fmt.Errorf(openErr, err.Path, err.Err)
 	}
 	defer inFile.Close()
-	buffer := bytes.NewBufferString(filepath.Base(filename))
-	buffer.WriteByte('\n')
+	buffer := new(bytes.Buffer)
 	buffer.Grow(initialSliceCap)
 	scanner := bufio.NewScanner(inFile)
 	for scanner.Scan() {
 		buffer.WriteString(scanner.Text())
 		buffer.WriteByte('\n')
 	}
-	if err := scanner.Err(); err != nil {
+	if err = scanner.Err(); err != nil {
 		return nil, fmt.Errorf(scanErr, err)
 	}
-	return generateTokens(buffer)
+	return generateTokens(buffer, src)
 }

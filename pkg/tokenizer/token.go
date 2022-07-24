@@ -1,5 +1,10 @@
 package tokenizer
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Token struct {
 	File string
 	Line int
@@ -8,5 +13,14 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return "{" + t.Repr + "}"
+	return fmt.Sprintf("{%s}", t.Repr)
+}
+
+func Add(t1, t2 Token) Token {
+	var builder strings.Builder
+	t := t1
+	builder.WriteString(t1.Repr)
+	builder.WriteString(t2.Repr)
+	t.Repr = builder.String()
+    return t
 }
