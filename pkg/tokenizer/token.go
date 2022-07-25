@@ -13,7 +13,7 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("{%s}", t.Repr)
+	return fmt.Sprintf("%s:%d:%d", t.File, t.Line, t.Pos)
 }
 
 func Add(t1, t2 Token) Token {

@@ -19,7 +19,7 @@ const (
 const (
 	openErr = "[ERROR] qorth: failed to open `%s` (%s)"
 	scanErr = "[FATAL] internal error: %v"
-	openStr = "[ERROR] %s:%d:%d: string %s encountered"
+	openStr = "[ERROR] %v: string %v\" is never closed"
 )
 
 func getString(buffer *bytes.Buffer) (string, bool) {
@@ -35,18 +35,40 @@ func getString(buffer *bytes.Buffer) (string, bool) {
 	return builder.String(), false
 }
 
-func generateTokens(buffer *bytes.Buffer, src string) ([]Token, error) {
+func readFilename(buffer *bytes.Buffer) string {
+	filename, _ := buffer.ReadString('\n')
+	return filename[:len(filename)-1]
+}
+
+func generateTokens(buffer *bytes.Buffer) ([]Token, error) {
 	var builder strings.Builder
-	var inComment, inString bool
+	token := &Token{File: readFilename(buffer), Line: 1, Pos: 1}
+	inString := false
 	tokens := make([]Token, 0, initialSliceCap)
-	lineNum, charNum := 1, 1
-	token := Token{File: filpath.Base(src), Line: 1, Pos: 1}
-	for c := byte(0); 0 < buffer.Len(); c, _ = buffer.ReadByte() {
+	for lineNum, charNum := 1, 1; 0 < buffer.Len(); charNum++ {
+		c, _ := buffer.ReadByte()
+		if c == '\n' {
+			if 0 < builder.Len() {
+				token.Repr = builder.String()
+				tokens = append(tokens, *token)
+				builder.Reset()
+			}
+			charNum = 0
+			lineNum++
+		}
+		if c != ' ' && builder.Len() == 0 {
+			token.Line = lineNum
+			token.Pos = charNum
+		}
+		if c == ' ' && 0 < builder.Len() {
+			token.Repr = builder.String()
+			tokens = append(tokens, *token)
+			builder.Reset()
+		}
+		builder.WriteByte(c)
 	}
 	if inString {
-		return nil, fmt.Errorf(
-			openStr, token.File, token.Line, token.Pos, builder.String(),
-		)
+		return nil, fmt.Errorf(openStr, token, builder)
 	}
 	return tokens[:len(tokens):len(tokens)], nil
 }
@@ -58,14 +80,28 @@ func GetTokensFromFile(src string) ([]Token, error) {
 	}
 	defer inFile.Close()
 	buffer := new(bytes.Buffer)
+	fmt.Fprintln(buffer, filepath.Base(src))
 	buffer.Grow(initialSliceCap)
 	scanner := bufio.NewScanner(inFile)
-	for scanner.Scan() {
-		buffer.WriteString(scanner.Text())
+	for inComment := false; scanner.Scan(); {
+		line := scanner.Text()
+		for _, char := range line {
+			if char == commentBegin && !inComment {
+				inComment = true
+			}
+			if inComment {
+				if char == commentEnd {
+					inComment = false
+				}
+				buffer.WriteByte(' ')
+				continue
+			}
+			buffer.WriteRune(char)
+		}
 		buffer.WriteByte('\n')
 	}
 	if err = scanner.Err(); err != nil {
 		return nil, fmt.Errorf(scanErr, err)
 	}
-	return generateTokens(buffer, src)
+	return generateTokens(buffer)
 }

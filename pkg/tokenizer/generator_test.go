@@ -1,6 +1,7 @@
 package tokenizer
 
 import (
+	"path/filepath"
 	"os"
 	"testing"
 )
@@ -12,6 +13,14 @@ func TestGetTokensFromFile(t *testing.T) {
 		t.Error(err)
 	}
 	for _, entry := range dir {
-		t.Logf("%s\n", entry.Name())
+		name := entry.Name()
+		t.Logf("%s\n", name)
+		tokens, err := GetTokensFromFile(filepath.Join(dirname, name))
+		if err != nil {
+			t.Error(err)
+		}
+		for _, token := range tokens {
+			t.Log(token.Repr)
+		}
 	}
 }
